@@ -9,6 +9,11 @@ export default function IndexRoute() {
   const scheme = useColorScheme();
 
   const handleNumber = (num: string) => {
+    if (display === "Error") {
+      setDisplay(num);
+      setShouldResetDisplay(false);
+      return;
+    }
     if (shouldResetDisplay) {
       setDisplay(num);
       setShouldResetDisplay(false);
@@ -18,6 +23,11 @@ export default function IndexRoute() {
   };
 
   const handleDecimal = () => {
+    if (display === "Error") {
+      setDisplay("0.");
+      setShouldResetDisplay(false);
+      return;
+    }
     if (shouldResetDisplay) {
       setDisplay("0.");
       setShouldResetDisplay(false);
@@ -27,12 +37,21 @@ export default function IndexRoute() {
   };
 
   const handleOperation = (op: string) => {
+    if (display === "Error") {
+      return;
+    }
     const currentValue = parseFloat(display);
 
     if (previousValue !== null && operation && !shouldResetDisplay) {
       const result = calculate(previousValue, currentValue, operation);
       setDisplay(String(result));
-      setPreviousValue(result);
+      if (result === "Error") {
+        setPreviousValue(null);
+        setOperation(null);
+        setShouldResetDisplay(true);
+        return;
+      }
+      setPreviousValue(result as number);
     } else {
       setPreviousValue(currentValue);
     }
@@ -41,17 +60,20 @@ export default function IndexRoute() {
     setShouldResetDisplay(true);
   };
 
-  const calculate = (a: number, b: number, op: string): number => {
+  const calculate = (a: number, b: number, op: string): number | string => {
     switch (op) {
       case "+": return a + b;
       case "-": return a - b;
       case "×": return a * b;
-      case "÷": return b !== 0 ? a / b : 0;
+      case "÷": return b !== 0 ? a / b : "Error";
       default: return b;
     }
   };
 
   const handleEquals = () => {
+    if (display === "Error") {
+      return;
+    }
     if (previousValue !== null && operation) {
       const currentValue = parseFloat(display);
       const result = calculate(previousValue, currentValue, operation);
@@ -70,11 +92,13 @@ export default function IndexRoute() {
   };
 
   const handleToggleSign = () => {
+    if (display === "Error") return;
     const value = parseFloat(display);
     setDisplay(String(value * -1));
   };
 
   const handlePercent = () => {
+    if (display === "Error") return;
     const value = parseFloat(display);
     setDisplay(String(value / 100));
   };
